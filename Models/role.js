@@ -1,3 +1,5 @@
+//Role Model
+
 class Role {
     constructor(title, salary, departmentId) {
         this.title = title;
