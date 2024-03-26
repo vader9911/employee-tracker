@@ -1,8 +1,8 @@
 //Index file for db calls
 
-const Department = require('./department');
-const Role = require('./role');
-const Employee = require('./employee');
+const Department = require('./DepartmentService');
+const Role = require('./RoleService');
+const Employee = require('./EmployeeService');
 
 
 module.exports = {
