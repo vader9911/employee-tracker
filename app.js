@@ -46,7 +46,7 @@ async function startApp() {
         await viewRoles(connection);
         break;
       case 'View all employees':
-        await viewEmployees(connection);
+        await viewEmployee(connection);
         break;
       case 'Add a department':
         await addDepartment(connection);
@@ -66,5 +66,56 @@ async function startApp() {
     }
   });
 }
+
+// Function to view all departments
+async function viewDepartments(connection) {
+    try {
+      const [rows, fields] = await connection.execute('SELECT * FROM department');
+      console.table(rows);
+      startApp();
+    } catch (error) {
+      console.error('Error viewing departments:', error);
+    }
+  }
+  
+  // Function to view all roles
+  async function viewRoles(connection) {
+    try {
+      const [rows, fields] = await connection.execute(`
+        SELECT role.id, role.title, role.salary, department.name AS department
+        FROM role
+        LEFT JOIN department ON role.department_id = department.id
+      `);
+      console.table(rows);
+      startApp();
+    } catch (error) {
+      console.error('Error viewing roles:', error);
+    }
+  }
+  
+  // Function to view all employees
+  async function viewEmployee(connection) {
+    try {
+      const [rows, fields] = await connection.execute(`
+        SELECT 
+          employee.id,
+          employee.first_name,
+          employee.last_name,
+          role.title AS role,
+          role.salary,
+          CONCAT(manager.first_name, ' ', manager.last_name) AS manager
+        FROM 
+          employee
+        LEFT JOIN 
+          role ON employee.role_id = role.id
+        LEFT JOIN 
+          employee AS manager ON employee.manager_id = manager.id
+      `);
+      console.table(rows);
+      startApp();
+    } catch (error) {
+      console.error('Error viewing employee:', error);
+    }
+  }
 
 startApp();
