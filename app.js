@@ -23,6 +23,7 @@ async function startApp() {
   const connection = await connectToDatabase();
   if (!connection) return;
 
+// Prompt for user input
   inquirer.prompt({
     type: 'list',
     name: 'action',
@@ -37,6 +38,8 @@ async function startApp() {
       'Update an employee role',
       'Exit'
     ]
+
+// Run function based on user input
   }).then(async (answer) => {
     switch (answer.action) {
       case 'View all departments':
@@ -120,24 +123,78 @@ async function viewDepartments(connection) {
 
 // Function to add a department
 async function addDepartment(connection) {
+
+    // Fetch the necessary tables
     try {
       const answer = await inquirer.prompt({
         type: 'input',
         name: 'name',
         message: 'Enter the name of the department:'
       });
-      await connection.execute('INSERT INTO department (name) VALUES (?)', [answer.name]);
-      console.log('Department added successfully.');
+
+    // Push changes to DB using prepared statement 
+      const [result] = await connection.execute('INSERT INTO department (name) VALUES (?)', [answer.name]);
+      console.log('Department added successfully. ID:', result.insertId);
       startApp();
     } catch (error) {
       console.error('Error adding department:', error);
     }
   }
 
+// Function to add an employee
+async function addEmployee(connection) {
 
+    // Fetch the necessary tables
+    try {
+      const roles = await connection.execute('SELECT id, title FROM role');
+      const roleChoices = roles[0].map(role => ({
+        name: role.title,
+        value: role.id
+      }));
+  
+      const managers = await connection.execute('SELECT id, first_name, last_name FROM employee');
+      const managerChoices = managers[0].map(manager => ({
+        name: `${manager.first_name} ${manager.last_name}`,
+        value: manager.id
+      }));
+  
+      managerChoices.push({ name: 'None', value: null });
+  
+    // Fetch the necessary tables
+      const answer = await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'first_name',
+          message: 'Enter the employee\'s first name:'
+        },
+        {
+          type: 'input',
+          name: 'last_name',
+          message: 'Enter the employee\'s last name:'
+        },
+        {
+          type: 'list',
+          name: 'role_id',
+          message: 'Select the role for the employee:',
+          choices: roleChoices
+        },
+        {
+          type: 'list',
+          name: 'manager_id',
+          message: 'Select the manager for the employee:',
+          choices: managerChoices
+        }
+      ]);
+  
+    // Push changes to DB using prepared statement 
+      const [result] = await connection.execute('INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)', [answer.first_name, answer.last_name, answer.role_id, answer.manager_id]);
+      console.log('Employee added successfully. ID:', result.insertId);
+      startApp();
+    } catch (error) {
+      console.error('Error adding employee:', error);
+    }
+  }
+  
 
-
-
-
-
+// Start the app
 startApp();
