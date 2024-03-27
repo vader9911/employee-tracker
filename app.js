@@ -118,4 +118,26 @@ async function viewDepartments(connection) {
     }
   }
 
+// Function to add a department
+async function addDepartment(connection) {
+    try {
+      const answer = await inquirer.prompt({
+        type: 'input',
+        name: 'name',
+        message: 'Enter the name of the department:'
+      });
+      await connection.execute('INSERT INTO department (name) VALUES (?)', [answer.name]);
+      console.log('Department added successfully.');
+      startApp();
+    } catch (error) {
+      console.error('Error adding department:', error);
+    }
+  }
+
+
+
+
+
+
+
 startApp();
