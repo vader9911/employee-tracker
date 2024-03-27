@@ -1,69 +1,70 @@
+const mysql = require('mysql2/promise');
 const inquirer = require('inquirer');
+require('dotenv').config();
 
-const { DepartmentService, RoleService, EmployeeService } = require('./services/index');
-
-// const connectToDatabase = require('./config/connection');
-
-
-async function start() {
-    
-    
-    
-
-    const { choice } = await inquirer.prompt([
-        {
-            type: 'list',
-            name: 'choice',
-            message: 'What would you like to do?',
-            choices: [
-                'Add an employee',
-                'View all employees',
-                'Update an employee role',
-                'Exit'
-            ]
-        }
-        
-    ]);
-
-    switch (choice) {
-        case 'Add an employee':
-            const { firstName, lastName, roleId, managerId } = await inquirer.prompt([
-                {
-                    type: 'input',
-                    name: 'firstName',
-                    message: 'Enter the first name of the employee:'
-                },
-                {
-                    type: 'input',
-                    name: 'lastName',
-                    message: 'Enter the last name of the employee:'
-                },
-                {
-                    type: 'input',
-                    name: 'roleId',
-                    message: 'Enter the role ID for the employee:'
-                },
-                {
-                    type: 'input',
-                    name: 'managerId',
-                    message: 'Enter the manager ID for the employee (leave empty if none):'
-                }
-            ]);
-            await EmployeeService.addEmployee(firstName, lastName, roleId, managerId);
-            console.log('Employee added successfully.');
-            start();
-            break;
-
-        case 'View all employees':
-            const employees = await EmployeeService.getAllEmployees();
-            console.table(employees);
-            start();
-            break;
-
-        case 'Exit':
-            console.log('Exiting...');
-            process.exit(0);
-    }
+// Create the MySQL connection
+async function connectToDatabase() {
+  try {
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE
+    });
+    console.log('Connected to MySQL database...');
+    return connection;
+  } catch (error) {
+    console.error('Error connecting to the database:', error);
+  }
 }
 
-start();
+// Function to start the application
+async function startApp() {
+  const connection = await connectToDatabase();
+  if (!connection) return;
+
+  inquirer.prompt({
+    type: 'list',
+    name: 'action',
+    message: 'What would you like to do?',
+    choices: [
+      'View all departments',
+      'View all roles',
+      'View all employees',
+      'Add a department',
+      'Add a role',
+      'Add an employee',
+      'Update an employee role',
+      'Exit'
+    ]
+  }).then(async (answer) => {
+    switch (answer.action) {
+      case 'View all departments':
+        await viewDepartments(connection);
+        break;
+      case 'View all roles':
+        await viewRoles(connection);
+        break;
+      case 'View all employees':
+        await viewEmployees(connection);
+        break;
+      case 'Add a department':
+        await addDepartment(connection);
+        break;
+      case 'Add a role':
+        await addRole(connection);
+        break;
+      case 'Add an employee':
+        await addEmployee(connection);
+        break;
+      case 'Update an employee role':
+        await updateEmployeeRole(connection);
+        break;
+      case 'Exit':
+        connection.end();
+        break;
+    }
+  });
+}
+
+startApp();
