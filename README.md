@@ -28,7 +28,7 @@ This is a command line app to manage employees, their roles and their salaries.
 4. Execute the application by running `node app.js`.
 5. Follow the on screen prompts.
 
-A brief walkthrough video can be found [Here]()
+A brief walkthrough video can be found [Here](https://drive.google.com/file/d/1YTDojApbPEOuzXFigJ54W7CLyyT6vNLJ/view?usp=sharing)
 
 ## License
 
